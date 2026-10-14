@@ -1,0 +1,30 @@
+id,question,role,expected_tables,forbidden_tables,forbidden_columns,category
+q01,Where can I find monthly customer churn by region?,analyst,analytics.customer_churn_monthly,,,lookup
+q02,Which table has customer attrition numbers?,analyst,analytics.customer_churn_monthly,,,synonym
+q03,I need order line items with quantity and discount,analyst,sales.order_items,,,lookup
+q04,Where is the official monthly revenue by region?,finance_analyst,finance.revenue_monthly,,,lookup
+q05,Where is the official monthly revenue by region?,analyst,,finance.revenue_monthly,,access
+q06,employee salaries by department,hr_partner,hr.employees,,,lookup
+q07,employee salaries by department,analyst,,hr.employees;hr.payroll,,access
+q08,staff headcount per department,hr_partner,hr.employees,,,synonym
+q09,customer email addresses,admin,sales.customers,,,lookup
+q10,customer email addresses,analyst,,,sales.customers.email;sales.customers.phone;hr.employees.work_email,column_access
+q11,support complaints by priority,analyst,support.tickets,,,synonym
+q12,how satisfied are customers with support? CSAT score,viewer,support.csat_responses,,,lookup
+q13,which marketing campaigns spent the most budget,viewer,marketing.campaigns,,,lookup
+q14,website visits that converted from a campaign,analyst,marketing.web_sessions,,,synonym
+q15,unpaid invoices and their due dates,finance_analyst,finance.invoices,,,lookup
+q16,payments received by payment method,finance_analyst,finance.payments,,,lookup
+q17,product list price and launch date,viewer,product.products,,,lookup
+q18,gross pay and net pay per pay period,hr_partner,hr.payroll,,,lookup
+q19,bank account details of employees,hr_partner,,,hr.payroll.bank_account_last4,column_access
+q20,weather forecast for tomorrow,analyst,,,,no_match
+q21,quarterly stock price of competitors,viewer,,,,no_match
+q22,daily revenue and average order value by channel,admin,analytics.daily_sales_summary,,,lookup
+q23,daily revenue and average order value by channel,analyst,,analytics.daily_sales_summary,,access
+q24,which customers bought which products,analyst,sales.order_items;sales.orders,,,lookup
+q25,client attrition figures,analyst,analytics.customer_churn_monthly,,,synonym
+q26,workforce per department,hr_partner,hr.employees,,,synonym
+q27,wages for each pay period,hr_partner,hr.payroll,,,synonym
+q28,helpdesk issues by priority,analyst,support.tickets,,,synonym
+q29,bills that are past due,finance_analyst,finance.invoices,,,synonym
