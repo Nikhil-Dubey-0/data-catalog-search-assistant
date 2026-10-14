@@ -1,0 +1,275 @@
+=== 1. Fresh setup: generate synthetic warehouse + first pipeline run ===
+
+$ catalog_assistant setup
+run 1: SUCCESS
+  active tables/columns : 16 / 99
+  changes               : {'column_added': 99, 'table_added': 16}
+  quarantined rows      : {'business_column': 4, 'business_table': 6, 'glossary': 2, 'user_role_grant': 1}
+  undocumented tbl/col  : 2 / 8
+  fail-closed tables    : 1   auto-PII columns: 0
+
+=== 2. Rerun with identical inputs (idempotency) ===
+
+$ catalog_assistant build
+run 2: SKIPPED
+  inputs unchanged since last successful run
+
+=== 3. What did the pipeline reject? ===
+
+$ catalog_assistant runs
+run_id  started_at                 status   added  modified  removed  quarantined  error
+------  -------------------------  -------  -----  --------  -------  -----------  -----
+1       2026-10-14T10:05:36+00:00  success  115    0         0        13           None 
+2       2026-10-14T10:05:36+00:00  skipped  0      0         0        0            None 
+
+change log (run 1, tables):
+entity_key                        change_type  changed_fields
+--------------------------------  -----------  --------------
+analytics.customer_churn_monthly  added        None          
+analytics.daily_sales_summary     added        None          
+finance.invoices                  added        None          
+finance.payments                  added        None          
+finance.revenue_monthly           added        None          
+hr.employees                      added        None          
+hr.payroll                        added        None          
+marketing.campaigns               added        None          
+marketing.web_sessions            added        None          
+product.categories                added        None          
+product.products                  added        None          
+sales.customers                   added        None          
+sales.order_items                 added        None          
+sales.orders                      added        None          
+support.csat_responses            added        None          
+support.tickets                   added        None          
+
+quarantine (run 1):
+entity           source_row  record_key                         reason                                       
+---------------  ----------  ---------------------------------  ---------------------------------------------
+user_role_grant  2           viewer -> marketing_ro             unknown access_role 'marketing_ro' in grants 
+business_table   3           sales.orders                       duplicate key in file, superseded by row 21  
+business_table   5           product.products                   invalid certified flag 'maybe' (expected Y/N)
+business_table   7           product.categories                 duplicate key in file, superseded by row 22  
+business_table   15          support.tickets                    duplicate key in file, superseded by row 16  
+business_table   19          analytics.daily_sales_summary      unknown access_role 'superuser'              
+business_table   20          sales.legacy_orders_2019           orphan: table not found in warehouse         
+business_column  10          sales.customers.loyalty_points     orphan: column not found in warehouse        
+business_column  16          sales.orders.total_amount          duplicate key in file, superseded by row 17  
+business_column  40          marketing.web_sessions.visitor_id  unknown access_role 'secret'                 
+business_column  80          support.tickets.priority           invalid is_pii flag 'maybe' (expected Y/N)   
+glossary         2           revenue                            duplicate key in file, superseded by row 4   
+glossary         16                                             missing term                                 
+
+=== 4. Same question, different roles ===
+
+$ catalog_assistant ask employee salaries by department --role hr_partner
+
+Q [hr_partner]: employee salaries by department
+status: answered   confidence: high   provider: offline   AI validation: not_called: offline mode   (4 ms)
+search terms: compensation (glossary), employee (glossary), department (query)
+
+Best match: hr.employees - Employee directory with department, job title, manager, hire date and
+salary. Relevant columns: salary, department, employee_id, full_name, hire_date. Owner: people-
+analytics@example.com. Also relevant: hr.payroll.
+
+  1. hr.employees  [access: hr, certified; retrieval confidence: high; source: retrieval]
+     owner: people-analytics@example.com   matched terms: compensation, employee, department
+     why: matched terms: compensation, employee, department
+       - salary (REAL): Annual base salary.
+       - department (TEXT): Department the employee belongs to.
+       - employee_id (INTEGER): Unique employee identifier.
+       - full_name (TEXT): Employee full name.
+       - hire_date (DATE): Date the employee joined.
+  2. hr.payroll  [access: hr; retrieval confidence: medium; source: retrieval]
+     owner: people-analytics@example.com   matched terms: compensation, employee
+     why: matched terms: compensation, employee
+       - net_pay (REAL): (undocumented)
+       - gross_pay (REAL): Gross pay before deductions.
+       - pay_period (TEXT): Pay period (YYYY-MM).
+       - employee_id (INTEGER): Employee who was paid.
+       - payroll_id (INTEGER): Unique payroll record identifier.
+       (1 column(s) hidden by your role)
+
+$ catalog_assistant ask employee salaries by department --role analyst
+
+Q [analyst]: employee salaries by department
+status: no_match   confidence: low   provider: offline   AI validation: not_called: no evidence retrieved   (1 ms)
+search terms: compensation (glossary), employee (glossary), department (query)
+
+I could not find a dataset you have access to that matches this question. Try different business
+terms, or contact the data platform team if you expect restricted data to exist.
+
+
+=== 5. Column-level masking ===
+
+$ catalog_assistant ask customer email addresses --role analyst
+
+Q [analyst]: customer email addresses
+status: answered   confidence: medium   provider: offline   AI validation: not_called: offline mode   (6 ms)
+search terms: customer (glossary), email (query), addresses (query)
+
+Best match: sales.customers - Customer master: one row per registered customer with city, country,
+segment and signup date. Relevant columns: city, customer_id, signup_date, country, segment. Owner:
+sales-data@example.com. Also relevant: support.tickets, sales.orders.
+
+  1. sales.customers  [access: internal, certified; retrieval confidence: medium; source: retrieval]
+     owner: sales-data@example.com   matched terms: customer, addresses
+     why: matched terms: customer, addresses
+       - city (TEXT): City from the customer's default address.
+       - customer_id (INTEGER): Unique customer identifier (surrogate key).
+       - signup_date (DATE): Date the customer registered.
+       - country (TEXT): ISO country code of the customer.
+       - segment (TEXT): Customer segment: consumer, smb or enterprise.
+       (3 column(s) hidden by your role)
+  2. support.tickets  [access: internal, certified; retrieval confidence: medium; source: retrieval]
+     owner: support-ops@example.com   matched terms: customer, email
+     why: matched terms: customer, email
+       - channel (TEXT): Channel the ticket came in through (web, app, email, phone).
+       - customer_id (INTEGER): Customer who raised the ticket.
+  3. sales.orders  [access: internal, certified; retrieval confidence: medium; source: retrieval]
+     owner: sales-data@example.com   matched terms: customer, email
+     why: matched terms: customer, email
+       - channel (TEXT): Sales channel: web, app, store, email or phone.
+       - customer_id (INTEGER): Customer who placed the order (references sales.customers).
+
+=== 6. Synonyms via glossary, and an unanswerable question ===
+
+$ catalog_assistant ask client attrition figures --role analyst
+
+Q [analyst]: client attrition figures
+status: answered   confidence: high   provider: offline   AI validation: not_called: offline mode   (6 ms)
+search terms: churn (glossary), customer (glossary)
+
+Best match: analytics.customer_churn_monthly - Monthly customer churn: active customers, churned
+customers and churn rate by segment and region. Relevant columns: churned_customers, churn_rate,
+segment, active_customers, region. Owner: analytics-eng@example.com. Also relevant: sales.customers,
+sales.orders.
+
+  1. analytics.customer_churn_monthly  [access: internal, certified; retrieval confidence: high; source: retrieval]
+     owner: analytics-eng@example.com   matched terms: churn, customer
+     why: matched terms: churn, customer
+       - churned_customers (INTEGER): Customers who cancelled or became inactive during the month.
+       - churn_rate (REAL): churned_customers divided by active_customers.
+       - segment (TEXT): Customer segment.
+       - active_customers (INTEGER): Customers active at the start of the month.
+       - region (TEXT): Sales region.
+  2. sales.customers  [access: internal, certified; retrieval confidence: medium; source: retrieval]
+     owner: sales-data@example.com   matched terms: customer
+     why: matched terms: customer
+       - customer_id (INTEGER): Unique customer identifier (surrogate key).
+       - signup_date (DATE): Date the customer registered.
+       - country (TEXT): ISO country code of the customer.
+       - segment (TEXT): Customer segment: consumer, smb or enterprise.
+       - city (TEXT): City from the customer's default address.
+       (3 column(s) hidden by your role)
+  3. sales.orders  [access: internal, certified; retrieval confidence: high; source: retrieval]
+     owner: sales-data@example.com   matched terms: churn, customer
+     why: matched terms: churn, customer
+       - status (TEXT): Order status: placed, shipped, delivered, cancelled or returned.
+       - customer_id (INTEGER): Customer who placed the order (references sales.customers).
+
+$ catalog_assistant ask quarterly stock price of competitors --role viewer
+
+Q [viewer]: quarterly stock price of competitors
+status: low_confidence   confidence: low   provider: offline   AI validation: not_called: offline mode   (3 ms)
+search terms: quarterly (query), stock (query), price (query), competitors (query)
+
+Low confidence - only part of your question matched. Best match: product.products - Product
+catalogue with category, list price, launch date and active flag. Relevant columns: list_price.
+Owner: product-ops@example.com.
+
+  1. product.products  [access: public, certified; retrieval confidence: low; source: retrieval]
+     owner: product-ops@example.com   matched terms: price
+     why: matched terms: price
+       - list_price (REAL): Current list price before discounts.
+
+=== 7. Evaluation set (base catalog) ===
+
+$ catalog_assistant eval --output var_demo/eval_report.md
+report written to var_demo/eval_report.md
+pass 28/29  policy_leaks=0  label_violations=0  glossary hit@1=0.955 vs fts-only 0.909
+
+=== 8. Upstream schema change + new steward metadata (incremental run) ===
+
+$ catalog_assistant simulate-change
+added column sales.customers.loyalty_tier
+created table marketing.email_events
+dropped table support.csat_responses
+next: python -m catalog_assistant build --with-changes
+
+$ catalog_assistant build --with-changes
+run 3: SUCCESS
+  active tables/columns : 16 / 100
+  changes               : {'column_added': 6, 'column_removed': 5, 'table_added': 1, 'table_modified': 3, 'table_removed': 1}
+  quarantined rows      : {'business_column': 8, 'business_table': 7, 'glossary': 2, 'user_role_grant': 1}
+  undocumented tbl/col  : 1 / 8
+  fail-closed tables    : 0   auto-PII columns: 1
+
+$ catalog_assistant runs
+run_id  started_at                 status   added  modified  removed  quarantined  error
+------  -------------------------  -------  -----  --------  -------  -----------  -----
+1       2026-10-14T10:05:36+00:00  success  115    0         0        13           None 
+2       2026-10-14T10:05:36+00:00  skipped  0      0         0        0            None 
+3       2026-10-14T10:05:41+00:00  success  7      3         6        18           None 
+
+change log (run 3, tables):
+entity_key                     change_type  changed_fields                                              
+-----------------------------  -----------  ------------------------------------------------------------
+marketing.email_events         added        None                                                        
+analytics.daily_sales_summary  modified     description, owner, tags, access_role (restricted -> public)
+finance.revenue_monthly        modified     description                                                 
+sales.customers                modified     column_count (8 -> 9)                                       
+support.csat_responses         removed      no longer in warehouse                                      
+
+quarantine (run 3):
+entity           source_row  record_key                           reason                                       
+---------------  ----------  -----------------------------------  ---------------------------------------------
+user_role_grant  2           viewer -> marketing_ro               unknown access_role 'marketing_ro' in grants 
+business_table   3           sales.orders                         duplicate key in file, superseded by row 21  
+business_table   5           product.products                     invalid certified flag 'maybe' (expected Y/N)
+business_table   7           product.categories                   duplicate key in file, superseded by row 22  
+business_table   15          support.tickets                      duplicate key in file, superseded by row 16  
+business_table   17          support.csat_responses               orphan: table not found in warehouse         
+business_table   19          analytics.daily_sales_summary        unknown access_role 'superuser'              
+business_table   20          sales.legacy_orders_2019             orphan: table not found in warehouse         
+business_column  10          sales.customers.loyalty_points       orphan: column not found in warehouse        
+business_column  16          sales.orders.total_amount            duplicate key in file, superseded by row 17  
+business_column  40          marketing.web_sessions.visitor_id    unknown access_role 'secret'                 
+business_column  80          support.tickets.priority             invalid is_pii flag 'maybe' (expected Y/N)   
+business_column  82          support.csat_responses.response_id   orphan: column not found in warehouse        
+business_column  83          support.csat_responses.ticket_id     orphan: column not found in warehouse        
+business_column  84          support.csat_responses.score         orphan: column not found in warehouse        
+business_column  85          support.csat_responses.submitted_at  orphan: column not found in warehouse        
+glossary         2           revenue                              duplicate key in file, superseded by row 4   
+glossary         16                                               missing term                                 
+
+$ catalog_assistant ask email opens and clicks per campaign --role analyst
+
+Q [analyst]: email opens and clicks per campaign
+status: answered   confidence: high   provider: offline   AI validation: not_called: offline mode   (6 ms)
+search terms: campaign (glossary), email (query), opens (query), clicks (query)
+
+Best match: marketing.email_events - Email marketing events (send, open, click, bounce) per campaign
+and recipient. Relevant columns: event_type, campaign_id, event_id, event_at. Owner:
+growth@example.com. Also relevant: marketing.campaigns.
+
+  1. marketing.email_events  [access: internal; retrieval confidence: high; source: retrieval]
+     owner: growth@example.com   matched terms: campaign, email, opens, clicks
+     why: matched terms: campaign, email, opens, clicks
+       - event_type (TEXT): Event type: sent, open, click or bounce.
+       - campaign_id (INTEGER): Campaign that sent the email.
+       - event_id (INTEGER): Unique email event identifier.
+       - event_at (DATETIME): Timestamp of the event.
+       (1 column(s) hidden by your role)
+  2. marketing.campaigns  [access: public, certified; retrieval confidence: medium; source: retrieval]
+     owner: growth@example.com   matched terms: campaign, email
+     why: matched terms: campaign, email
+       - channel (TEXT): Marketing channel such as email, search or social.
+       - campaign_name (TEXT): Campaign name.
+       - campaign_id (INTEGER): Unique campaign identifier.
+       - budget (REAL): Planned campaign budget.
+       - end_date (DATE): Campaign end date.
+
+=== 9. Edge case: unknown role is rejected ===
+
+$ catalog_assistant ask revenue --role ceo
+error: Unknown user role 'ceo'. Known roles: admin, analyst, finance_analyst, hr_partner, viewer
