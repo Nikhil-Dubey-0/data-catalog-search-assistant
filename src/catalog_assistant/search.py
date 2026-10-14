@@ -25,6 +25,7 @@ can could would should do does did have has had need needs want wants looking lo
 give get list see tell know any some all each every more most many much table tables dataset datasets data
 column columns field fields information info source sources please help where's whats which's
 number numbers figure figures stat stats statistics record records detail details
+they them their theirs he she him her his us its
 """.split())
 
 

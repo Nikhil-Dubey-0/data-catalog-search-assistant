@@ -19,8 +19,8 @@ run 2: SKIPPED
 $ catalog_assistant runs
 run_id  started_at                 status   added  modified  removed  quarantined  error
 ------  -------------------------  -------  -----  --------  -------  -----------  -----
-1       2026-10-14T10:05:36+00:00  success  115    0         0        13           None 
-2       2026-10-14T10:05:36+00:00  skipped  0      0         0        0            None 
+1       2026-10-14T10:11:39+00:00  success  115    0         0        13           None 
+2       2026-10-14T10:11:40+00:00  skipped  0      0         0        0            None 
 
 change log (run 1, tables):
 entity_key                        change_type  changed_fields
@@ -136,7 +136,7 @@ sales-data@example.com. Also relevant: support.tickets, sales.orders.
 $ catalog_assistant ask client attrition figures --role analyst
 
 Q [analyst]: client attrition figures
-status: answered   confidence: high   provider: offline   AI validation: not_called: offline mode   (6 ms)
+status: answered   confidence: high   provider: offline   AI validation: not_called: offline mode   (5 ms)
 search terms: churn (glossary), customer (glossary)
 
 Best match: analytics.customer_churn_monthly - Monthly customer churn: active customers, churned
@@ -207,9 +207,9 @@ run 3: SUCCESS
 $ catalog_assistant runs
 run_id  started_at                 status   added  modified  removed  quarantined  error
 ------  -------------------------  -------  -----  --------  -------  -----------  -----
-1       2026-10-14T10:05:36+00:00  success  115    0         0        13           None 
-2       2026-10-14T10:05:36+00:00  skipped  0      0         0        0            None 
-3       2026-10-14T10:05:41+00:00  success  7      3         6        18           None 
+1       2026-10-14T10:11:39+00:00  success  115    0         0        13           None 
+2       2026-10-14T10:11:40+00:00  skipped  0      0         0        0            None 
+3       2026-10-14T10:11:44+00:00  success  7      3         6        18           None 
 
 change log (run 3, tables):
 entity_key                     change_type  changed_fields                                              

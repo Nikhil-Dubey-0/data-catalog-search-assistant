@@ -166,14 +166,14 @@ def render_markdown(report: dict) -> str:
         "",
         "## Per question",
         "",
-        "| id | role | category | question | expected | top answer | status | rank | pass |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| id | role | category | question | expected | top answer | status | rank | AI validation | pass |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in report["cases"]:
         c = r.case
         exp = ", ".join(c.expected) or ("none (must not leak: " + ", ".join(c.forbidden_tables + c.forbidden_columns)
                                         + ")" if c.forbidden_tables or c.forbidden_columns else "none")
         lines.append(f"| {c.id} | {c.role} | {c.category} | {c.question} | {exp} | {r.top_answer or '-'} | "
-                     f"{r.status} | {r.rank or '-'} | {'PASS' if r.passed else 'FAIL'}"
+                     f"{r.status} | {r.rank or '-'} | {r.notes.split(':')[0]} | {'PASS' if r.passed else 'FAIL'}"
                      + (f" (leak: {', '.join(r.leaks)})" if r.leaks else "") + " |")
     return "\n".join(lines) + "\n"
