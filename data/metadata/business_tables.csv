@@ -1,0 +1,22 @@
+schema_name,table_name,description,owner,domain,tags,access_role,refresh_frequency,certified
+sales,customers,"Customer master: one row per registered customer with city, country, segment and signup date.",sales-data@example.com,Sales,customer;crm;master data,internal,daily,Y
+sales,orders,"Order header: one row per customer order with status, sales channel and total order value.",sales-data@example.com,sales,order;transactions;purchases,internal,hourly,Y
+sales,order_items,"Order line items: product, quantity, unit price and discount for every order line.",sales-data@example.com,sales,order lines;basket,internal,hourly,N
+product,products,"Product catalogue.",product-ops@example.com,product,sku,public,daily,maybe
+product,products,"Product catalogue with category, list price, launch date and active flag.",product-ops@example.com,product,sku;catalogue;pricing,public,daily,Y
+product,categories,,product-ops@example.com,product,taxonomy,public,weekly,N
+marketing,campaigns,"Marketing campaigns with channel, flight dates, budget and actual spend.",growth@example.com,marketing,ads;promotion;spend,public,daily,Y
+marketing,web_sessions,"Website sessions with landing page, attributed campaign, pageviews and conversion flag.",growth@example.com,marketing,traffic;clickstream;conversion,internal,hourly,N
+finance,invoices,"Invoices issued for orders, with tax amount, due date and payment status (open, paid, overdue).",finance-data@example.com,finance,billing;accounts receivable,finance,daily,Y
+finance,payments,"Payments received against invoices, by payment method and date.",finance-data@example.com,finance,cash;settlement,finance,daily,Y
+finance,revenue_monthly,"Certified monthly gross revenue, net revenue and refunds by region. Official source for revenue reporting.",finance-data@example.com,finance,revenue;kpi;reporting,finance,monthly,Y
+hr,employees,"Employee directory with department, job title, manager, hire date and salary.",people-analytics@example.com,hr,staff;headcount,hr,daily,Y
+hr,payroll,"Payroll results per employee and pay period: gross pay and net pay.",people-analytics@example.com,hr,compensation;pay,hr,monthly,N
+support,tickets,"Support tickets (old description).",support-ops@example.com,support,cases,internal,hourly,Y
+support,tickets,"Customer support tickets with channel, category, priority, status and resolution time.",support-ops@example.com,support,cases;complaints;sla,internal,hourly,Y
+support,csat_responses,"Customer satisfaction (CSAT) survey responses linked to support tickets, scored 1 to 5.",support-ops@example.com,support,feedback;survey;satisfaction,public,daily,N
+analytics,customer_churn_monthly,"Monthly customer churn: active customers, churned customers and churn rate by segment and region.",analytics-eng@example.com,analytics,churn;retention;kpi,internal,monthly,Y
+analytics,daily_sales_summary,"Daily sales KPIs by channel: number of orders, revenue and average order value.",analytics-eng@example.com,analytics,kpi;dashboard;revenue,superuser,daily,Y
+sales,legacy_orders_2019,"Archived 2019 orders from the old shop system.",sales-data@example.com,sales,archive,internal,never,N
+  SALES ,  Orders ,"Order header: one row per customer order with status, sales channel and total order value.",sales-data@example.com,sales,order;transactions;purchases,internal,hourly,Y
+product,categories,,product-ops@example.com,product,taxonomy,public,weekly,N

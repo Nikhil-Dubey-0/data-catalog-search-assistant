@@ -1,0 +1,4 @@
+schema_name,table_name,description,owner,domain,tags,access_role,refresh_frequency,certified
+analytics,daily_sales_summary,"Daily sales KPIs by channel: number of orders, revenue and average order value.",analytics-eng@example.com,analytics,kpi;dashboard;revenue,public,daily,Y
+marketing,email_events,"Email marketing events (send, open, click, bounce) per campaign and recipient.",growth@example.com,marketing,email;engagement;campaign,internal,hourly,N
+finance,revenue_monthly,"Certified monthly gross revenue, net revenue and refunds by region, net of chargebacks. Official source for revenue reporting.",finance-data@example.com,finance,revenue;kpi;reporting,finance,monthly,Y

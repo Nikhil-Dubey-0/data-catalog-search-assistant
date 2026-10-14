@@ -1,0 +1,16 @@
+term,definition,synonyms,related_tables
+revenue,Old definition.,sales,finance.revenue_monthly
+churn,Customers who stop buying or cancel during a period.,attrition;cancellation;customer loss;retention;churned,analytics.customer_churn_monthly
+revenue,Money earned from sales before costs.,income;turnover;gmv;earnings;sales value,finance.revenue_monthly;analytics.daily_sales_summary
+customer,A person or company that buys from us.,client;buyer;shopper;account holder,sales.customers
+employee,A person employed by the company.,staff;headcount;worker;personnel;people;workforce,hr.employees
+compensation,Money paid to employees.,salary;salaries;pay;wages;payroll,hr.payroll;hr.employees
+campaign,A planned marketing activity.,marketing;ads;advertising;promotion,marketing.campaigns
+ticket,A customer support request.,support case;complaint;issue;helpdesk,support.tickets
+satisfaction,How happy customers are with a service.,csat;nps;feedback;survey;rating,support.csat_responses
+invoice,A bill sent to a customer.,bill;billing;receivable;unpaid,finance.invoices
+payment,Money received from a customer.,settlement;cash;collection,finance.payments
+product,An item we sell.,sku;item;merchandise,product.products
+order,A customer purchase.,purchase;basket;checkout,sales.orders
+traffic,Visits to our website.,visit;visits;session;clickstream;pageview,marketing.web_sessions
+,Missing term should be quarantined.,,

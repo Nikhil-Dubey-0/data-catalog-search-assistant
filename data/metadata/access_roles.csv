@@ -1,0 +1,7 @@
+access_role,description,sensitivity_rank
+public,Open to every employee,0
+internal,Internal business data for analysts,1
+finance,Financial ledgers and certified revenue,2
+hr,Employee and payroll data,3
+pii,Personally identifiable information (masked for most roles),4
+restricted,Fail-closed default for unclassified data (admin only),9

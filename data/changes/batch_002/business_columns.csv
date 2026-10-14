@@ -1,0 +1,6 @@
+schema_name,table_name,column_name,description,is_pii,access_role
+sales,customers,loyalty_tier,"Loyalty programme tier: bronze, silver or gold.",N,
+marketing,email_events,event_id,Unique email event identifier.,N,
+marketing,email_events,campaign_id,Campaign that sent the email.,N,
+marketing,email_events,event_type,"Event type: sent, open, click or bounce.",N,
+marketing,email_events,event_at,Timestamp of the event.,N,

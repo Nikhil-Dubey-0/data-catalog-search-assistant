@@ -1,0 +1,6 @@
+user_role,description,grants
+viewer,Any employee,public;marketing_ro
+analyst,Business or data analyst,public;internal
+finance_analyst,Finance team analyst,public;internal;finance
+hr_partner,HR business partner,public;internal;hr
+admin,Data platform administrator,public;internal;finance;hr;pii;restricted
