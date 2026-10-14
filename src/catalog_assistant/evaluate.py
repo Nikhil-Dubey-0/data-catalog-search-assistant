@@ -89,8 +89,11 @@ def run_eval(con: sqlite3.Connection, cases: list[EvalCase], llm: LLMClient | No
         for r in ans.recommendations:
             cols_shown |= {f"{r.table_key}.{x['name']}" for x in r.columns}
 
-        leaks = [t for t in shown if t in c.forbidden_tables or not _authorized(con, c.role, t)]
-        leaks += [col for col in c.forbidden_columns if col in cols_shown]
+        # unauthorised = violates the policy in the catalog right now (a real leak);
+        # forbidden = violates the labels in the eval file (written for the base build)
+        leaks = [f"unauthorised:{t}" for t in shown if not _authorized(con, c.role, t)]
+        leaks += [f"forbidden:{t}" for t in shown if t in c.forbidden_tables]
+        leaks += [f"forbidden:{col}" for col in c.forbidden_columns if col in cols_shown]
         top = ans.recommendations[0].table_key if ans.recommendations else None
         rank = next((i + 1 for i, t in enumerate(ranked) if t in c.expected), None)
 
@@ -114,10 +117,22 @@ def run_eval(con: sqlite3.Connection, cases: list[EvalCase], llm: LLMClient | No
         "passed": sum(r.passed for r in results),
         "total": len(results),
         "access_leaks": sum(len(r.leaks) for r in results),
+        "policy_leaks": sum(1 for r in results for x in r.leaks if x.startswith("unauthorised:")),
+        "catalog_state_note": _state_note(con),
         "by_category": {k: f"{sum(r.passed for r in v)}/{len(v)}" for k, v in sorted(by_cat.items())},
         "retrieval_fts_only": retrieval_metrics(con, cases, use_glossary=False),
         "retrieval_fts_glossary": retrieval_metrics(con, cases, use_glossary=True),
     }
+
+
+def _state_note(con: sqlite3.Connection) -> str | None:
+    row = con.execute("SELECT metadata_sources FROM etl_run WHERE status = 'success' "
+                      "ORDER BY run_id DESC LIMIT 1").fetchone()
+    if row and row[0] and "changes/" in row[0]:
+        return ("Catalog includes change batches; the eval labels describe the base build, so "
+                "'forbidden' findings may reflect intended policy changes. Rebuild with "
+                "`python -m catalog_assistant setup --force` for a like-for-like run.")
+    return None
 
 
 def render_markdown(report: dict) -> str:
@@ -125,15 +140,18 @@ def render_markdown(report: dict) -> str:
     lines = [
         "# Evaluation report",
         "",
-        f"Generated {report['generated_at']} with provider `{report['provider']}` against the base catalog build.",
+        f"Generated {report['generated_at']} with provider `{report['provider']}` against the current catalog build.",
         "",
         "## Summary",
         "",
         "| Metric | Value |",
         "|---|---|",
         f"| End-to-end pass rate | **{report['passed']}/{report['total']} ({report['pass_rate']:.0%})** |",
-        f"| Access-control leaks (forbidden or unauthorised tables/columns shown) | **{report['access_leaks']}** |",
+        f"| Policy leaks (table shown that the role is not granted right now) | **{report['policy_leaks']}** |",
+        f"| Label violations incl. forbidden columns (expected-hidden items shown) | **{report['access_leaks']}** |",
     ]
+    if report.get("catalog_state_note"):
+        lines[4:4] = [f"> **Note:** {report['catalog_state_note']}", ""]
     lines += [f"| Category `{k}` | {v} |" for k, v in report["by_category"].items()]
     lines += [
         "",

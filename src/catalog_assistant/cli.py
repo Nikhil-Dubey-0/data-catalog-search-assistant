@@ -154,10 +154,13 @@ def cmd_eval(args):
         Path(args.output).write_text(md, encoding="utf-8")
         print(f"report written to {args.output}")
     print(md if not args.output else
-          f"pass {report['passed']}/{report['total']}  leaks={report['access_leaks']}  "
+          f"pass {report['passed']}/{report['total']}  policy_leaks={report['policy_leaks']}  "
+          f"label_violations={report['access_leaks']}  "
           f"glossary hit@1={report['retrieval_fts_glossary']['hit@1']} "
           f"vs fts-only {report['retrieval_fts_only']['hit@1']}")
-    if report["access_leaks"]:
+    if report.get("catalog_state_note"):
+        print(f"note: {report['catalog_state_note']}")
+    if report["policy_leaks"]:
         sys.exit(2)
 
 
