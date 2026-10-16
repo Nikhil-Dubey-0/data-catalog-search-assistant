@@ -11,7 +11,8 @@ A small, reproducible data product. A metadata pipeline harvests technical metad
 | Design note (1 page) | [docs/design_note.md](docs/design_note.md) |
 | Architecture & data model | [docs/architecture.md](docs/architecture.md) |
 | Testing evidence | [docs/testing_evidence.md](docs/testing_evidence.md) · [docs/eval_report.md](docs/eval_report.md) |
-| Demo video | *link to be added* · script: [docs/demo_video_script.md](docs/demo_video_script.md) |
+| GitHub repository | https://github.com/Nikhil-Dubey-0/data-catalog-search-assistant |
+| Demo video (5–8 min) | *link to be added* |
 | Submission summary (PDF) | [docs/SUBMISSION_SUMMARY.pdf](docs/SUBMISSION_SUMMARY.pdf) |
 
 ---
@@ -112,7 +113,7 @@ No ORM, no vector database, no orchestration framework. The data volume doesn't 
 Requires Python ≥ 3.10 and git.
 
 ```bash
-git clone <repo-url> data-catalog-search-assistant
+git clone https://github.com/Nikhil-Dubey-0/data-catalog-search-assistant.git
 cd data-catalog-search-assistant
 python -m venv .venv
 # Windows: .venv\Scripts\activate     macOS/Linux: source .venv/bin/activate

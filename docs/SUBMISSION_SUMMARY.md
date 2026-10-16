@@ -2,7 +2,7 @@
 
 **Assignment:** DAI-041 (AI + Data) · **Candidate:** Nikhil Dubey · **Stack:** Python 3.10+, SQLite (SQL, FTS5), optional Ollama / OpenAI-compatible LLM, Streamlit, pytest
 
-**Links:** GitHub repository: *to be added* · Demo video: *to be added*
+**Links:** GitHub repository: https://github.com/Nikhil-Dubey-0/data-catalog-search-assistant · Demo video: *to be added*
 
 ## Problem
 
