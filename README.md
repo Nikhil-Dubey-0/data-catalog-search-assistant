@@ -12,7 +12,7 @@ A small, reproducible data product. A metadata pipeline harvests technical metad
 | Architecture & data model | [docs/architecture.md](docs/architecture.md) |
 | Testing evidence | [docs/testing_evidence.md](docs/testing_evidence.md) · [docs/eval_report.md](docs/eval_report.md) |
 | GitHub repository | https://github.com/Nikhil-Dubey-0/data-catalog-search-assistant |
-| Demo video (5–8 min) | *link to be added* |
+| Demo video (5–8 min) | https://drive.google.com/file/d/1zU6MEgZCsHTCLyKGLhtmiM3v_R1PXDcd/view?usp=sharing |
 | Submission summary (PDF) | [docs/SUBMISSION_SUMMARY.pdf](docs/SUBMISSION_SUMMARY.pdf) |
 
 ---
